@@ -1,0 +1,1345 @@
+
+        <!DOCTYPE html>
+        <html lang="en">
+        <head>
+            <meta charset="UTF-8">
+            <meta name="viewport" content="width=device-width, initial-scale=1.0">
+            <title>DL Model Interpretability Report - Instance 0</title>
+            <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+            <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+            <style>
+                :root {
+                    --primary-color: #1e3a8a;
+                    --primary-gradient: linear-gradient(135deg, #1e40af 0%, #3b82f6 100%);
+                    --secondary-color: #f8fafc;
+                    --accent-color: #10b981;
+                    --warning-color: #f59e0b;
+                    --danger-color: #ef4444;
+                    --text-primary: #1f2937;
+                    --text-secondary: #6b7280;
+                    --border-color: #e5e7eb;
+                    --shadow-sm: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
+                    --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+                    --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+                    --shadow-xl: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+                }
+
+                * {
+                    margin: 0;
+                    padding: 0;
+                    box-sizing: border-box;
+                }
+
+                body {
+                    font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+                    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+                    min-height: 100vh;
+                    color: var(--text-primary);
+                    line-height: 1.6;
+                }
+
+                .main-container {
+                    max-width: 1400px;
+                    margin: 0 auto;
+                    padding: 2rem;
+                }
+
+                .header-section {
+                    background: white;
+                    border-radius: 20px;
+                    padding: 3rem 2rem;
+                    margin-bottom: 2rem;
+                    box-shadow: var(--shadow-xl);
+                    text-align: center;
+                    position: relative;
+                    overflow: hidden;
+                }
+
+                .header-section::before {
+                    content: '';
+                    position: absolute;
+                    top: 0;
+                    left: 0;
+                    right: 0;
+                    height: 6px;
+                    background: var(--primary-gradient);
+                }
+
+                .header-title {
+                    font-size: 2.5rem;
+                    font-weight: 700;
+                    background: var(--primary-gradient);
+                    -webkit-background-clip: text;
+                    -webkit-text-fill-color: transparent;
+                    background-clip: text;
+                    margin-bottom: 0.5rem;
+                    display: flex;
+                    align-items: center;
+                    justify-content: center;
+                    gap: 1rem;
+                }
+
+                .header-subtitle {
+                    font-size: 1.1rem;
+                    color: var(--text-secondary);
+                    font-weight: 400;
+                }
+
+                .navigation-container {
+                    background: white;
+                    border-radius: 16px;
+                    padding: 1.5rem;
+                    margin-bottom: 2rem;
+                    box-shadow: var(--shadow-lg);
+                    display: flex;
+                    justify-content: center;
+                    gap: 1rem;
+                }
+
+                .nav-button {
+                    background: linear-gradient(135deg, #f8fafc 0%, #f1f5f9 100%);
+                    border: 2px solid var(--border-color);
+                    color: var(--text-primary);
+                    padding: 1rem 2rem;
+                    border-radius: 12px;
+                    font-weight: 600;
+                    font-size: 1rem;
+                    cursor: pointer;
+                    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+                    display: flex;
+                    align-items: center;
+                    gap: 0.5rem;
+                    position: relative;
+                    overflow: hidden;
+                }
+
+                .nav-button::before {
+                    content: '';
+                    position: absolute;
+                    top: 0;
+                    left: -100%;
+                    width: 100%;
+                    height: 100%;
+                    background: var(--primary-gradient);
+                    transition: left 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+                    z-index: 0;
+                }
+
+                .nav-button:hover::before,
+                .nav-button.active::before {
+                    left: 0;
+                }
+
+                .nav-button:hover,
+                .nav-button.active {
+                    color: white;
+                    border-color: var(--primary-color);
+                    transform: translateY(-2px);
+                    box-shadow: var(--shadow-lg);
+                }
+
+                .nav-button span {
+                    position: relative;
+                    z-index: 1;
+                }
+
+                .nav-button i {
+                    position: relative;
+                    z-index: 1;
+                }
+
+                .content-section {
+                    display: none;
+                    animation: fadeIn 0.5s ease-in-out;
+                }
+
+                .content-section.active {
+                    display: block;
+                }
+
+                @keyframes fadeIn {
+                    from { opacity: 0; transform: translateY(20px); }
+                    to { opacity: 1; transform: translateY(0); }
+                }
+
+                .analysis-card {
+                    background: white;
+                    border-radius: 16px;
+                    padding: 2rem;
+                    margin-bottom: 2rem;
+                    box-shadow: var(--shadow-lg);
+                    border: 1px solid var(--border-color);
+                    position: relative;
+                    overflow: hidden;
+                }
+
+                .analysis-card::before {
+                    content: '';
+                    position: absolute;
+                    top: 0;
+                    left: 0;
+                    right: 0;
+                    height: 4px;
+                    background: var(--primary-gradient);
+                }
+
+                .card-header {
+                    display: flex;
+                    align-items: center;
+                    gap: 1rem;
+                    margin-bottom: 1.5rem;
+                    padding-bottom: 1rem;
+                    border-bottom: 2px solid var(--secondary-color);
+                }
+
+                .card-icon {
+                    width: 48px;
+                    height: 48px;
+                    background: var(--primary-gradient);
+                    border-radius: 12px;
+                    display: flex;
+                    align-items: center;
+                    justify-content: center;
+                    color: white;
+                    font-size: 1.5rem;
+                }
+
+                .card-title {
+                    font-size: 1.5rem;
+                    font-weight: 600;
+                    color: var(--text-primary);
+                    margin: 0;
+                }
+
+                .prediction-summary {
+                    background: linear-gradient(135deg, #f0f9ff 0%, #e0f2fe 100%);
+                    border: 2px solid #0ea5e9;
+                    border-radius: 16px;
+                    padding: 2rem;
+                    margin-bottom: 2rem;
+                    position: relative;
+                    overflow: hidden;
+                }
+
+                .prediction-summary::before {
+                    content: '';
+                    position: absolute;
+                    top: 0;
+                    left: 0;
+                    right: 0;
+                    height: 6px;
+                    background: linear-gradient(90deg, #0ea5e9, #06b6d4);
+                }
+
+                .prediction-item {
+                    display: flex;
+                    align-items: center;
+                    gap: 1rem;
+                    margin-bottom: 1rem;
+                    padding: 1rem;
+                    background: white;
+                    border-radius: 12px;
+                    box-shadow: var(--shadow-sm);
+                }
+
+                .prediction-icon {
+                    width: 40px;
+                    height: 40px;
+                    border-radius: 10px;
+                    display: flex;
+                    align-items: center;
+                    justify-content: center;
+                    color: white;
+                    font-weight: 600;
+                }
+
+                .prediction-label {
+                    font-weight: 600;
+                    color: var(--text-primary);
+                    min-width: 120px;
+                }
+
+                .prediction-value {
+                    color: var(--text-secondary);
+                    font-weight: 500;
+                }
+
+                .feature-table {
+                    width: 100%;
+                    border-collapse: collapse;
+                    border-radius: 12px;
+                    overflow: hidden;
+                    box-shadow: var(--shadow-sm);
+                    background: white;
+                }
+
+                .feature-table th {
+                    background: var(--primary-gradient);
+                    color: white;
+                    padding: 1rem;
+                    text-align: left;
+                    font-weight: 600;
+                    font-size: 0.95rem;
+                }
+
+                .feature-table td {
+                    padding: 1rem;
+                    border-bottom: 1px solid var(--border-color);
+                    transition: background-color 0.2s;
+                }
+
+                .feature-table tr:hover td {
+                    background-color: var(--secondary-color);
+                }
+
+                .feature-table tr:last-child td {
+                    border-bottom: none;
+                }
+
+                .weight-positive {
+                    color: var(--accent-color);
+                    font-weight: 600;
+                }
+
+                .weight-negative {
+                    color: var(--danger-color);
+                    font-weight: 600;
+                }
+
+                .impact-badge {
+                    padding: 0.25rem 0.75rem;
+                    border-radius: 20px;
+                    font-size: 0.8rem;
+                    font-weight: 600;
+                    text-transform: uppercase;
+                    letter-spacing: 0.5px;
+                }
+
+                .impact-positive {
+                    background: linear-gradient(135deg, #ecfdf5 0%, #d1fae5 100%);
+                    color: var(--accent-color);
+                    border: 1px solid #a7f3d0;
+                }
+
+                .impact-negative {
+                    background: linear-gradient(135deg, #fef2f2 0%, #fee2e2 100%);
+                    color: var(--danger-color);
+                    border: 1px solid #fca5a5;
+                }
+
+                .visualization-container {
+                    text-align: center;
+                    margin: 2rem 0;
+                }
+
+                .visualization-image {
+                    max-width: 100%;
+                    height: auto;
+                    border-radius: 12px;
+                    box-shadow: var(--shadow-lg);
+                    border: 1px solid var(--border-color);
+                }
+
+                .explanation-box {
+                    background: linear-gradient(135deg, #f8fafc 0%, #f1f5f9 100%);
+                    border-left: 6px solid var(--primary-color);
+                    padding: 1.5rem;
+                    border-radius: 0 12px 12px 0;
+                    margin: 1.5rem 0;
+                    font-size: 0.95rem;
+                    line-height: 1.7;
+                }
+
+                .explanation-title {
+                    font-weight: 600;
+                    color: var(--text-primary);
+                    margin-bottom: 0.5rem;
+                    display: flex;
+                    align-items: center;
+                    gap: 0.5rem;
+                }
+
+                .visualization-grid {
+                    display: grid;
+                    grid-template-columns: repeat(auto-fit, minmax(500px, 1fr));
+                    gap: 2rem;
+                    margin: 2rem 0;
+                }
+
+                .visualization-item {
+                    background: white;
+                    border-radius: 16px;
+                    padding: 1.5rem;
+                    box-shadow: var(--shadow-lg);
+                    border: 1px solid var(--border-color);
+                }
+
+                .viz-section {
+                    background: white;
+                    border-radius: 16px;
+                    padding: 2rem;
+                    margin-bottom: 2rem;
+                    box-shadow: var(--shadow-lg);
+                    border: 1px solid var(--border-color);
+                }
+
+                .viz-header {
+                    display: flex;
+                    align-items: center;
+                    gap: 1rem;
+                    margin-bottom: 1.5rem;
+                    padding-bottom: 1rem;
+                    border-bottom: 2px solid var(--secondary-color);
+                }
+
+                .viz-icon {
+                    width: 40px;
+                    height: 40px;
+                    background: var(--primary-gradient);
+                    border-radius: 10px;
+                    display: flex;
+                    align-items: center;
+                    justify-content: center;
+                    color: white;
+                    font-size: 1.2rem;
+                }
+
+                .viz-title {
+                    font-size: 1.3rem;
+                    font-weight: 600;
+                    color: var(--text-primary);
+                    margin: 0;
+                }
+
+                .no-viz-message {
+                    text-align: center;
+                    padding: 3rem;
+                    color: var(--text-secondary);
+                    font-style: italic;
+                    background: linear-gradient(135deg, #f8fafc 0%, #f1f5f9 100%);
+                    border-radius: 12px;
+                    border: 2px dashed var(--border-color);
+                }
+
+                .file-list {
+                    background: var(--secondary-color);
+                    border-radius: 8px;
+                    padding: 1rem;
+                    margin: 1rem auto;
+                    max-width: 600px;
+                    text-align: left;
+                }
+
+                .file-list ul {
+                    list-style: none;
+                    padding: 0;
+                }
+
+                .file-list li {
+                    padding: 0.5rem 0;
+                    border-bottom: 1px solid var(--border-color);
+                    display: flex;
+                    align-items: center;
+                    gap: 0.5rem;
+                }
+
+                .file-list li:last-child {
+                    border-bottom: none;
+                }
+
+                .file-list li::before {
+                    content: '📄';
+                    font-size: 1rem;
+                }
+
+                .viz-grid-container {
+                    margin: 2rem 0;
+                }
+
+                .viz-grid-row {
+                    display: grid;
+                    grid-template-columns: 1fr 1fr;
+                    gap: 1.5rem;
+                    margin-bottom: 2rem;
+                }
+
+                .viz-grid-item {
+                    background: white;
+                    border-radius: 12px;
+                    padding: 1.5rem;
+                    box-shadow: var(--shadow-md);
+                    border: 1px solid var(--border-color);
+                }
+
+                .viz-header-small {
+                    display: flex;
+                    align-items: center;
+                    gap: 0.75rem;
+                    margin-bottom: 1rem;
+                    padding-bottom: 0.75rem;
+                    border-bottom: 1px solid var(--border-color);
+                }
+
+                .viz-icon-small {
+                    width: 32px;
+                    height: 32px;
+                    background: var(--primary-gradient);
+                    border-radius: 8px;
+                    display: flex;
+                    align-items: center;
+                    justify-content: center;
+                    color: white;
+                    font-size: 1rem;
+                }
+
+                .viz-title-small {
+                    font-size: 1.1rem;
+                    font-weight: 600;
+                    color: var(--text-primary);
+                    margin: 0;
+                    line-height: 1.3;
+                }
+
+                .visualization-container-small {
+                    text-align: center;
+                }
+
+                .visualization-image-small {
+                    max-width: 100%;
+                    height: auto;
+                    border-radius: 8px;
+                    box-shadow: var(--shadow-sm);
+                    border: 1px solid var(--border-color);
+                }
+
+                .explanation-box-small {
+                    background: linear-gradient(135deg, #f8fafc 0%, #f1f5f9 100%);
+                    border-left: 4px solid var(--primary-color);
+                    padding: 1rem;
+                    border-radius: 0 8px 8px 0;
+                    margin: 1rem 0;
+                    font-size: 0.85rem;
+                    line-height: 1.5;
+                    text-align: left;
+                }
+
+                .explanation-title-small {
+                    font-weight: 600;
+                    color: var(--text-primary);
+                    margin-bottom: 0.5rem;
+                    display: flex;
+                    align-items: center;
+                    gap: 0.5rem;
+                    font-size: 0.9rem;
+                }
+
+                @media (max-width: 768px) {
+                    .viz-grid-row {
+                        grid-template-columns: 1fr;
+                        gap: 1rem;
+                    }
+                    
+                    .viz-header-small {
+                        flex-direction: column;
+                        text-align: center;
+                        gap: 0.5rem;
+                    }
+                    
+                    .viz-title-small {
+                        font-size: 1rem;
+                    }
+                    
+                    .explanation-box-small {
+                        font-size: 0.8rem;
+                    }
+                }
+
+                .scroll-top {
+                    position: fixed;
+                    bottom: 2rem;
+                    right: 2rem;
+                    width: 50px;
+                    height: 50px;
+                    background: var(--primary-gradient);
+                    border: none;
+                    border-radius: 50%;
+                    color: white;
+                    font-size: 1.2rem;
+                    cursor: pointer;
+                    box-shadow: var(--shadow-lg);
+                    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+                    opacity: 0;
+                    visibility: hidden;
+                }
+
+                .scroll-top.visible {
+                    opacity: 1;
+                    visibility: visible;
+                }
+
+                .scroll-top:hover {
+                    transform: translateY(-3px);
+                    box-shadow: var(--shadow-xl);
+                }
+            </style>
+        </head>
+        <body>
+            <div class="main-container">
+                <div class="header-section">
+                    <h1 class="header-title">
+                        <i class="fas fa-brain"></i>
+                        DL Model Interpretability Report
+                    </h1>
+                    <p class="header-subtitle">Comprehensive Machine Learning Analysis Dashboard - Instance 0</p>
+                </div>
+                
+                <div class="navigation-container">
+                    <button id="main-btn" class="nav-button active" onclick="showSection('main-analysis')">
+                        <i class="fas fa-chart-line"></i>
+                        <span>Main Analysis</span>
+                    </button>
+                    <button id="viz-btn" class="nav-button" onclick="showSection('visualizations')">
+                        <i class="fas fa-chart-bar"></i>
+                        <span>Global Feature Analysis</span>
+                    </button>
+                </div>
+
+                <!-- Main Analysis Section -->
+                <div id="main-analysis" class="content-section active">
+                    <div class="analysis-card">
+                        <div class="card-header">
+                            <div class="card-icon">
+                                <i class="fas fa-target"></i>
+                            </div>
+                            <h2 class="card-title">Prediction Summary</h2>
+                        </div>
+                        <div class="prediction-summary">
+                            <div class="prediction-item">
+                                <div class="prediction-icon" style="background: linear-gradient(135deg, #3b82f6 0%, #1d4ed8 100%);">
+                                    <i class="fas fa-hashtag"></i>
+                                </div>
+                                <span class="prediction-label">Instance ID:</span>
+                                <span class="prediction-value">0</span>
+                            </div>
+                            <div class="prediction-item">
+                                <div class="prediction-icon" style="background: linear-gradient(135deg, #10b981 0%, #059669 100%);">
+                                    <i class="fas fa-bullseye"></i>
+                                </div>
+                                <span class="prediction-label">Predicted Class:</span>
+                                <span class="prediction-value">4</span>
+                            </div>
+                            <div class="prediction-item">
+                                <div class="prediction-icon" style="background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%);">
+                                    <i class="fas fa-exclamation-triangle"></i>
+                                </div>
+                                <span class="prediction-label">Analysis:</span>
+                                <span class="prediction-value">The truck is expected to fail within 0-6 hours.</span>
+                            </div>
+        
+                            <div class="visualization-container">
+                                <img src="attention_visualization_vehicle_420.png" class="visualization-image" alt="Attention Visualization">
+                                <div class="explanation-box">
+                                    <div class="explanation-title">
+                                        <i class="fas fa-eye"></i>
+                                        Attention Visualization Analysis
+                                    </div>
+                                    The attention heatmap above reveals which time steps the AI model focuses on when making predictions. Brighter colors indicate higher attention weights, showing the temporal patterns that most influence the decision. The probability distribution graph displays the model's confidence across all possible failure classes, with the green bar highlighting the predicted outcome.
+                                </div>
+                            </div>
+        
+                        </div>
+                    </div>
+
+                    <div class="analysis-card">
+                        <div class="card-header">
+                            <div class="card-icon">
+                                <i class="fas fa-weight-hanging"></i>
+                            </div>
+                            <h2 class="card-title">Feature Importance Analysis</h2>
+                        </div>
+                        <div class="visualization-container">
+                            <img src="feature_importance_420.png" class="visualization-image" alt="Feature Importance">
+                            <div class="explanation-box">
+                                <div class="explanation-title">
+                                    <i class="fas fa-chart-bar"></i>
+                                    LIME Feature Impact Explanation
+                                </div>
+                                This horizontal bar chart displays the most influential features identified by LIME (Local Interpretable Model-agnostic Explanations). Features extending to the right (green bars) support the predicted outcome, while those extending left (red bars) oppose it. The bar length represents the magnitude of each feature's influence on the final prediction.
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="analysis-card">
+                        <div class="card-header">
+                            <div class="card-icon">
+                                <i class="fas fa-table"></i>
+                            </div>
+                            <h2 class="card-title">Detailed Feature Weights</h2>
+                        </div>
+                        <table class="feature-table">
+                            <thead>
+                                <tr>
+                                    <th><i class="fas fa-cog"></i> Feature Name</th>
+                                    <th><i class="fas fa-balance-scale"></i> Weight Value</th>
+                                    <th><i class="fas fa-impact"></i> Impact Type</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+        
+                                <tr>
+                                    <td>feature_459_0_40</td>
+                                    <td class="weight-negative">-0.0021</td>
+                                    <td><span class="impact-badge impact-negative">Negative</span></td>
+                                </tr>
+            
+                                <tr>
+                                    <td>feature_459_13_6</td>
+                                    <td class="weight-negative">-0.0020</td>
+                                    <td><span class="impact-badge impact-negative">Negative</span></td>
+                                </tr>
+            
+                                <tr>
+                                    <td>feature_459_1_49</td>
+                                    <td class="weight-negative">-0.0020</td>
+                                    <td><span class="impact-badge impact-negative">Negative</span></td>
+                                </tr>
+            
+                                <tr>
+                                    <td>feature_158_9_22</td>
+                                    <td class="weight-negative">-0.0019</td>
+                                    <td><span class="impact-badge impact-negative">Negative</span></td>
+                                </tr>
+            
+                                <tr>
+                                    <td>feature_291_5_4</td>
+                                    <td class="weight-negative">-0.0019</td>
+                                    <td><span class="impact-badge impact-negative">Negative</span></td>
+                                </tr>
+            
+                                <tr>
+                                    <td>feature_158_0_13</td>
+                                    <td class="weight-negative">-0.0019</td>
+                                    <td><span class="impact-badge impact-negative">Negative</span></td>
+                                </tr>
+            
+                                <tr>
+                                    <td>feature_459_14_15</td>
+                                    <td class="weight-negative">-0.0019</td>
+                                    <td><span class="impact-badge impact-negative">Negative</span></td>
+                                </tr>
+            
+                                <tr>
+                                    <td>feature_100_0_31</td>
+                                    <td class="weight-negative">-0.0018</td>
+                                    <td><span class="impact-badge impact-negative">Negative</span></td>
+                                </tr>
+            
+                                <tr>
+                                    <td>feature_459_16_33</td>
+                                    <td class="weight-negative">-0.0017</td>
+                                    <td><span class="impact-badge impact-negative">Negative</span></td>
+                                </tr>
+            
+                                <tr>
+                                    <td>feature_291_3_47</td>
+                                    <td class="weight-negative">-0.0017</td>
+                                    <td><span class="impact-badge impact-negative">Negative</span></td>
+                                </tr>
+            
+                                <tr>
+                                    <td>feature_397_3_17</td>
+                                    <td class="weight-negative">-0.0017</td>
+                                    <td><span class="impact-badge impact-negative">Negative</span></td>
+                                </tr>
+            
+                                <tr>
+                                    <td>feature_459_17_42</td>
+                                    <td class="weight-negative">-0.0016</td>
+                                    <td><span class="impact-badge impact-negative">Negative</span></td>
+                                </tr>
+            
+                                <tr>
+                                    <td>feature_459_18_51</td>
+                                    <td class="weight-negative">-0.0016</td>
+                                    <td><span class="impact-badge impact-negative">Negative</span></td>
+                                </tr>
+            
+                                <tr>
+                                    <td>feature_397_0_8</td>
+                                    <td class="weight-negative">-0.0016</td>
+                                    <td><span class="impact-badge impact-negative">Negative</span></td>
+                                </tr>
+            
+                                <tr>
+                                    <td>feature_459_15_24</td>
+                                    <td class="weight-negative">-0.0016</td>
+                                    <td><span class="impact-badge impact-negative">Negative</span></td>
+                                </tr>
+            
+                                <tr>
+                                    <td>feature_397_5_35</td>
+                                    <td class="weight-negative">-0.0016</td>
+                                    <td><span class="impact-badge impact-negative">Negative</span></td>
+                                </tr>
+            
+                                <tr>
+                                    <td>feature_370_0_29</td>
+                                    <td class="weight-negative">-0.0016</td>
+                                    <td><span class="impact-badge impact-negative">Negative</span></td>
+                                </tr>
+            
+                                <tr>
+                                    <td>feature_291_0_38</td>
+                                    <td class="weight-negative">-0.0015</td>
+                                    <td><span class="impact-badge impact-negative">Negative</span></td>
+                                </tr>
+            
+                                <tr>
+                                    <td>feature_167_3_11</td>
+                                    <td class="weight-negative">-0.0015</td>
+                                    <td><span class="impact-badge impact-negative">Negative</span></td>
+                                </tr>
+            
+                                <tr>
+                                    <td>feature_272_9_20</td>
+                                    <td class="weight-negative">-0.0015</td>
+                                    <td><span class="impact-badge impact-negative">Negative</span></td>
+                                </tr>
+            
+                            </tbody>
+                        </table>
+                        <div class="explanation-box">
+                            <div class="explanation-title">
+                                <i class="fas fa-info-circle"></i>
+                                Feature Weight Interpretation
+                            </div>
+                            This comprehensive table presents the numerical weights assigned to each feature by the LIME algorithm. Positive weights (highlighted in green) indicate features that support the predicted class, while negative weights (highlighted in red) represent features that oppose the prediction. The magnitude of each weight reflects the strength of that feature's influence.
+                        </div>
+                    </div>
+
+                    <div class="analysis-card">
+                        <div class="card-header">
+                            <div class="card-icon">
+                                <i class="fas fa-clock"></i>
+                            </div>
+                            <h2 class="card-title">Temporal Feature Analysis</h2>
+                        </div>
+        
+                        <div class="visualization-container">
+                            <img src="feature_importance_vehicle_420.png" class="visualization-image" alt="Temporal Feature Importance">
+                            <div class="explanation-box">
+                                <div class="explanation-title">
+                                    <i class="fas fa-timeline"></i>
+                                    Time-Step Importance Analysis
+                                </div>
+                                This advanced visualization reveals which specific time points in the sequence are most critical for this vehicle's prediction. The attention-based importance scores show when the model pays the most attention during its decision-making process. Higher importance values indicate time steps that carry more weight in the final prediction, helping identify critical moments in the vehicle's operational timeline.
+                            </div>
+                        </div>
+            
+                    </div>
+
+                    <div class="analysis-card">
+                        <div class="card-header">
+                            <div class="card-icon">
+                                <i class="fas fa-wave-square"></i>
+                            </div>
+                            <h2 class="card-title">Time Series Pattern Analysis</h2>
+                        </div>
+                        <div class="visualization-container">
+                            <img src="timeseries_420.png" class="visualization-image" alt="Time Series Analysis">
+                            <div class="explanation-box">
+                                <div class="explanation-title">
+                                    <i class="fas fa-chart-line"></i>
+                                    Temporal Pattern Insights
+                                </div>
+                                This time series visualization tracks the evolution of the most important features over time. Each colored line represents a different feature, allowing you to observe trends, anomalies, and relationships between features across the temporal dimension. Understanding these patterns is crucial for identifying early warning signs and system behaviors that lead to the predicted outcome.
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="visualization-grid">
+                        <div class="visualization-item">
+                            <div class="viz-header">
+                                <div class="viz-icon">
+                                    <i class="fas fa-network-wired"></i>
+                                </div>
+                                <h3 class="viz-title">Feature Correlation Matrix</h3>
+                            </div>
+                            <div class="visualization-container">
+                                <img src="correlation_420.png" class="visualization-image" alt="Correlation Analysis">
+                                <div class="explanation-box">
+                                    <div class="explanation-title">
+                                        <i class="fas fa-project-diagram"></i>
+                                        Correlation Insights
+                                    </div>
+                                    This heatmap reveals the strength and direction of relationships between the most important features. Dark blue indicates strong positive correlation (features move together), while dark red shows strong negative correlation (features move in opposite directions). Understanding these relationships helps identify feature dependencies and potential redundancies in the prediction model.
+                                </div>
+                            </div>
+                        </div>
+                        <div class="visualization-item">
+                            <div class="viz-header">
+                                <div class="viz-icon">
+                                    <i class="fas fa-chart-area"></i>
+                                </div>
+                                <h3 class="viz-title">Feature Distribution Analysis</h3>
+                            </div>
+                            <div class="visualization-container">
+                                <img src="distribution_420.png" class="visualization-image" alt="Distribution Analysis">
+                                <div class="explanation-box">
+                                    <div class="explanation-title">
+                                        <i class="fas fa-bell-curve"></i>
+                                        Distribution Patterns
+                                    </div>
+                                    These density curves show how feature values are distributed across the time series. The shape of each distribution provides insights into data normality, outliers, and central tendencies. Wide distributions indicate high variability, while narrow peaks suggest consistent values. This analysis helps understand the underlying data characteristics that drive model predictions.
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Global Visualizations Section -->
+                <div id="visualizations" class="content-section">
+                    <div class="analysis-card">
+                        <div class="card-header">
+                            <div class="card-icon">
+                                <i class="fas fa-globe"></i>
+                            </div>
+                            <h2 class="card-title">Global Feature Analysis & Model Insights</h2>
+                        </div>
+                        <div class="explanation-box">
+                            <div class="explanation-title">
+                                <i class="fas fa-lightbulb"></i>
+                                Comprehensive Model Analysis Overview
+                            </div>
+                            This section presents comprehensive visualizations that analyze feature importance patterns across the entire dataset and all prediction classes. These global insights reveal how the model makes decisions across different scenarios, providing a deeper understanding of feature relationships and model behavior beyond individual predictions. The analysis includes permutation importance, SHAP values, and class-specific feature rankings.
+                        </div>
+                    </div>
+        
+                    <div class="viz-section">
+                        <div class="viz-header">
+                            <div class="viz-icon">
+                                <i class="fas fa-chart-bar"></i>
+                            </div>
+                            <h3 class="viz-title">Permutation Feature Importance (Bar Chart)</h3>
+                        </div>
+                        <div class="visualization-container">
+                            <img src="../../../visualizations/permutation_feature_importance_bar.png" class="visualization-image" alt="Permutation Feature Importance (Bar Chart)">
+                            <div class="explanation-box">
+                                <div class="explanation-title">
+                                    <i class="fas fa-microscope"></i>
+                                    Analysis Details
+                                </div>
+                                This bar chart shows the top 20 most important features determined by GPU-accelerated permutation. The importance score indicates how much the model's performance degrades when that feature's values are randomly shuffled. Higher scores indicate more critical features for the model's predictions.
+                            </div>
+                        </div>
+                    </div>
+                
+                    <div class="viz-section">
+                        <div class="viz-header">
+                            <div class="viz-icon">
+                                <i class="fas fa-chart-bar"></i>
+                            </div>
+                            <h3 class="viz-title">Class-Specific Feature Importance Analysis</h3>
+                        </div>
+                        <div class="visualization-container">
+                            <img src="../../../visualizations/class_specific_feature_importance.png" class="visualization-image" alt="Class-Specific Feature Importance Analysis">
+                            <div class="explanation-box">
+                                <div class="explanation-title">
+                                    <i class="fas fa-microscope"></i>
+                                    Analysis Details
+                                </div>
+                                These subplots show the top 15 features for each prediction class (0-4 representing different failure time windows). Each class has its own importance ranking, revealing which features are most predictive for specific failure scenarios. This analysis helps understand the model's decision-making process for different risk levels.
+                            </div>
+                        </div>
+                    </div>
+                
+                    <div class="viz-grid-container">
+            <div class="viz-grid-row">
+                    <div class="viz-grid-item">
+                        <div class="viz-header-small">
+                            <div class="viz-icon-small">
+                                <i class="fas fa-chart-bar"></i>
+                            </div>
+                            <h4 class="viz-title-small">Feature Importance Heatmap by Class</h4>
+                        </div>
+                        <div class="visualization-container-small">
+                            <img src="../../../visualizations/permutation_importance_heatmap.png" class="visualization-image-small" alt="Feature Importance Heatmap by Class">
+                            <div class="explanation-box-small">
+                                <div class="explanation-title-small">
+                                    <i class="fas fa-info-circle"></i>
+                                    Details
+                                </div>
+                                This heatmap displays feature importance scores across all prediction classes (0-4). The color intensity represents the importance level for each feature-class combination. Darker regions indicate higher importance, helping identify which features are most relevant for specific failure time windows.
+                            </div>
+                        </div>
+                    </div>
+                
+                    <div class="viz-grid-item">
+                        <div class="viz-header-small">
+                            <div class="viz-icon-small">
+                                <i class="fas fa-chart-bar"></i>
+                            </div>
+                            <h4 class="viz-title-small">Feature Importance Variance Analysis</h4>
+                        </div>
+                        <div class="visualization-container-small">
+                            <img src="../../../visualizations/feature_importance_variance.png" class="visualization-image-small" alt="Feature Importance Variance Analysis">
+                            <div class="explanation-box-small">
+                                <div class="explanation-title-small">
+                                    <i class="fas fa-info-circle"></i>
+                                    Details
+                                </div>
+                                This chart shows features with the highest variance in importance across different classes. High variance indicates that a feature's importance changes significantly depending on the prediction class, suggesting these features are particularly discriminative for distinguishing between different failure time windows.
+                            </div>
+                        </div>
+                    </div>
+                    </div><div class="viz-grid-row">
+                    <div class="viz-grid-item">
+                        <div class="viz-header-small">
+                            <div class="viz-icon-small">
+                                <i class="fas fa-chart-bar"></i>
+                            </div>
+                            <h4 class="viz-title-small">SHAP Summary Plot - All Classes</h4>
+                        </div>
+                        <div class="visualization-container-small">
+                            <img src="../../../visualizations/corrected_summary_all_classes.png" class="visualization-image-small" alt="SHAP Summary Plot - All Classes">
+                            <div class="explanation-box-small">
+                                <div class="explanation-title-small">
+                                    <i class="fas fa-info-circle"></i>
+                                    Details
+                                </div>
+                                This comprehensive SHAP summary plot shows feature importance across all classes simultaneously. The plot combines information from all failure time windows, providing a global view of which features are most important for the overall model performance. The color intensity and position indicate both the magnitude and direction of each feature's impact.
+                            </div>
+                        </div>
+                    </div>
+                
+                    <div class="viz-grid-item">
+                        <div class="viz-header-small">
+                            <div class="viz-icon-small">
+                                <i class="fas fa-chart-bar"></i>
+                            </div>
+                            <h4 class="viz-title-small">Beeswarm Plot - Class 4 (0-6 Hour Failure)</h4>
+                        </div>
+                        <div class="visualization-container-small">
+                            <img src="../../../visualizations/corrected_beeswarm_class_4_4.png" class="visualization-image-small" alt="Beeswarm Plot - Class 4 (0-6 Hour Failure)">
+                            <div class="explanation-box-small">
+                                <div class="explanation-title-small">
+                                    <i class="fas fa-info-circle"></i>
+                                    Details
+                                </div>
+                                This beeswarm plot presents SHAP values for Class 4 predictions (immediate failure within 0-6 hours). This represents the most critical failure category, and the plot reveals which features are most indicative of imminent system failure, providing insights for emergency intervention protocols.
+                            </div>
+                        </div>
+                    </div>
+                    </div><div class="viz-grid-row">
+                    <div class="viz-grid-item">
+                        <div class="viz-header-small">
+                            <div class="viz-icon-small">
+                                <i class="fas fa-chart-bar"></i>
+                            </div>
+                            <h4 class="viz-title-small">Beeswarm Plot - Class 3 (6-12 Hour Failure)</h4>
+                        </div>
+                        <div class="visualization-container-small">
+                            <img src="../../../visualizations/corrected_beeswarm_class_3_3.png" class="visualization-image-small" alt="Beeswarm Plot - Class 3 (6-12 Hour Failure)">
+                            <div class="explanation-box-small">
+                                <div class="explanation-title-small">
+                                    <i class="fas fa-info-circle"></i>
+                                    Details
+                                </div>
+                                This beeswarm plot shows SHAP values for Class 3 predictions (failure expected within 6-12 hours). The visualization helps identify critical features that distinguish imminent failures from longer-term failure predictions, showing the model's decision boundary for urgent maintenance needs.
+                            </div>
+                        </div>
+                    </div>
+                
+                    <div class="viz-grid-item">
+                        <div class="viz-header-small">
+                            <div class="viz-icon-small">
+                                <i class="fas fa-chart-bar"></i>
+                            </div>
+                            <h4 class="viz-title-small">Beeswarm Plot - Class 2 (12-24 Hour Failure)</h4>
+                        </div>
+                        <div class="visualization-container-small">
+                            <img src="../../../visualizations/corrected_beeswarm_class_2_2.png" class="visualization-image-small" alt="Beeswarm Plot - Class 2 (12-24 Hour Failure)">
+                            <div class="explanation-box-small">
+                                <div class="explanation-title-small">
+                                    <i class="fas fa-info-circle"></i>
+                                    Details
+                                </div>
+                                This beeswarm plot illustrates SHAP values for Class 2 predictions (failure expected within 12-24 hours). The density and spread of points reveal which features are most consistently important for this failure time window and how their values influence the model's confidence in Class 2 predictions.
+                            </div>
+                        </div>
+                    </div>
+                    </div><div class="viz-grid-row">
+                    <div class="viz-grid-item">
+                        <div class="viz-header-small">
+                            <div class="viz-icon-small">
+                                <i class="fas fa-chart-bar"></i>
+                            </div>
+                            <h4 class="viz-title-small">Beeswarm Plot - Class 1 (24-48 Hour Failure)</h4>
+                        </div>
+                        <div class="visualization-container-small">
+                            <img src="../../../visualizations/corrected_beeswarm_class_1_1.png" class="visualization-image-small" alt="Beeswarm Plot - Class 1 (24-48 Hour Failure)">
+                            <div class="explanation-box-small">
+                                <div class="explanation-title-small">
+                                    <i class="fas fa-info-circle"></i>
+                                    Details
+                                </div>
+                                This beeswarm plot displays SHAP values for Class 1 predictions (failure expected within 24-48 hours). The distribution of dots shows how different feature values contribute to Class 1 predictions across all instances in the dataset. Red dots indicate positive SHAP values (supporting Class 1), while blue dots indicate negative values (opposing Class 1).
+                            </div>
+                        </div>
+                    </div>
+                
+                    <div class="viz-grid-item">
+                        <div class="viz-header-small">
+                            <div class="viz-icon-small">
+                                <i class="fas fa-chart-bar"></i>
+                            </div>
+                            <h4 class="viz-title-small">Beeswarm Plot - Class 0 (No Failure)</h4>
+                        </div>
+                        <div class="visualization-container-small">
+                            <img src="../../../visualizations/corrected_beeswarm_class_0_0.png" class="visualization-image-small" alt="Beeswarm Plot - Class 0 (No Failure)">
+                            <div class="explanation-box-small">
+                                <div class="explanation-title-small">
+                                    <i class="fas fa-info-circle"></i>
+                                    Details
+                                </div>
+                                This beeswarm plot shows the SHAP (SHapley Additive exPlanations) values for Class 0 predictions (no failure within 48 hours). Each dot represents a single instance, and the position on the x-axis indicates the feature's impact on pushing the prediction toward or away from Class 0. Features are sorted by importance, with the most influential features at the top.
+                            </div>
+                        </div>
+                    </div>
+                    </div><div class="viz-grid-row">
+                    <div class="viz-grid-item">
+                        <div class="viz-header-small">
+                            <div class="viz-icon-small">
+                                <i class="fas fa-chart-bar"></i>
+                            </div>
+                            <h4 class="viz-title-small">Violin Plot - Class 4 (0-6 Hour Failure)</h4>
+                        </div>
+                        <div class="visualization-container-small">
+                            <img src="../../../visualizations/corrected_violin_class_4_4.png" class="visualization-image-small" alt="Violin Plot - Class 4 (0-6 Hour Failure)">
+                            <div class="explanation-box-small">
+                                <div class="explanation-title-small">
+                                    <i class="fas fa-info-circle"></i>
+                                    Details
+                                </div>
+                                This violin plot presents SHAP value distributions for Class 4 predictions (immediate failure). The shapes indicate how feature contributions are distributed for the most critical failure category, revealing which features have stable versus highly variable impacts when predicting imminent system failure.
+                            </div>
+                        </div>
+                    </div>
+                
+                    <div class="viz-grid-item">
+                        <div class="viz-header-small">
+                            <div class="viz-icon-small">
+                                <i class="fas fa-chart-bar"></i>
+                            </div>
+                            <h4 class="viz-title-small">Violin Plot - Class 3 (6-12 Hour Failure)</h4>
+                        </div>
+                        <div class="visualization-container-small">
+                            <img src="../../../visualizations/corrected_violin_class_3_3.png" class="visualization-image-small" alt="Violin Plot - Class 3 (6-12 Hour Failure)">
+                            <div class="explanation-box-small">
+                                <div class="explanation-title-small">
+                                    <i class="fas fa-info-circle"></i>
+                                    Details
+                                </div>
+                                This violin plot shows SHAP value distributions for Class 3 predictions. The density patterns reveal how feature contributions are distributed for near-term failure predictions (6-12 hours), indicating which features show consistent patterns versus high variability in their predictive impact.
+                            </div>
+                        </div>
+                    </div>
+                    </div><div class="viz-grid-row">
+                    <div class="viz-grid-item">
+                        <div class="viz-header-small">
+                            <div class="viz-icon-small">
+                                <i class="fas fa-chart-bar"></i>
+                            </div>
+                            <h4 class="viz-title-small">Violin Plot - Class 2 (12-24 Hour Failure)</h4>
+                        </div>
+                        <div class="visualization-container-small">
+                            <img src="../../../visualizations/corrected_violin_class_2_2.png" class="visualization-image-small" alt="Violin Plot - Class 2 (12-24 Hour Failure)">
+                            <div class="explanation-box-small">
+                                <div class="explanation-title-small">
+                                    <i class="fas fa-info-circle"></i>
+                                    Details
+                                </div>
+                                This violin plot illustrates the SHAP value distributions for Class 2 predictions. The visualization reveals the spread and concentration of feature impacts for 12-24 hour failure predictions, helping identify which features have consistent versus variable effects on this intermediate failure timeframe.
+                            </div>
+                        </div>
+                    </div>
+                
+                    <div class="viz-grid-item">
+                        <div class="viz-header-small">
+                            <div class="viz-icon-small">
+                                <i class="fas fa-chart-bar"></i>
+                            </div>
+                            <h4 class="viz-title-small">Violin Plot - Class 1 (24-48 Hour Failure)</h4>
+                        </div>
+                        <div class="visualization-container-small">
+                            <img src="../../../visualizations/corrected_violin_class_1_1.png" class="visualization-image-small" alt="Violin Plot - Class 1 (24-48 Hour Failure)">
+                            <div class="explanation-box-small">
+                                <div class="explanation-title-small">
+                                    <i class="fas fa-info-circle"></i>
+                                    Details
+                                </div>
+                                This violin plot displays the distribution of SHAP values for Class 1 predictions. The shape and width of each violin indicate how consistently or variably each feature contributes to 24-48 hour failure predictions. Symmetric violins suggest balanced positive and negative contributions, while skewed shapes indicate directional bias.
+                            </div>
+                        </div>
+                    </div>
+                    </div><div class="viz-grid-row">
+                    <div class="viz-grid-item">
+                        <div class="viz-header-small">
+                            <div class="viz-icon-small">
+                                <i class="fas fa-chart-bar"></i>
+                            </div>
+                            <h4 class="viz-title-small">Violin Plot - Class 0 (No Failure)</h4>
+                        </div>
+                        <div class="visualization-container-small">
+                            <img src="../../../visualizations/corrected_violin_class_0_0.png" class="visualization-image-small" alt="Violin Plot - Class 0 (No Failure)">
+                            <div class="explanation-box-small">
+                                <div class="explanation-title-small">
+                                    <i class="fas fa-info-circle"></i>
+                                    Details
+                                </div>
+                                This violin plot shows the distribution of SHAP values for Class 0 predictions. The violin shape reveals the density distribution of feature impacts, with wider sections indicating more common impact values. This visualization helps understand the variability and typical range of feature contributions for non-failure predictions.
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                    </div>
+            
+                </div>
+            </div>
+
+            <button class="scroll-top" onclick="scrollToTop()">
+                <i class="fas fa-chevron-up"></i>
+            </button>
+
+            <script>
+                function showSection(sectionId) {
+                    // Hide all sections with animation
+                    const sections = document.querySelectorAll('.content-section');
+                    sections.forEach(section => {
+                        section.classList.remove('active');
+                    });
+                    
+                    // Show selected section with animation
+                    setTimeout(() => {
+                        document.getElementById(sectionId).classList.add('active');
+                    }, 150);
+                    
+                    // Update button states
+                    const buttons = document.querySelectorAll('.nav-button');
+                    buttons.forEach(btn => {
+                        btn.classList.remove('active');
+                    });
+                    
+                    // Activate current button
+                    if (sectionId === 'main-analysis') {
+                        document.getElementById('main-btn').classList.add('active');
+                    } else {
+                        document.getElementById('viz-btn').classList.add('active');
+                    }
+                    
+                    // Scroll to top smoothly
+                    window.scrollTo({
+                        top: 0,
+                        behavior: 'smooth'
+                    });
+                }
+                
+                function scrollToTop() {
+                    window.scrollTo({
+                        top: 0,
+                        behavior: 'smooth'
+                    });
+                }
+                
+                // Show/hide scroll to top button
+                window.addEventListener('scroll', function() {
+                    const scrollTop = window.pageYOffset || document.documentElement.scrollTop;
+                    const scrollButton = document.querySelector('.scroll-top');
+                    
+                    if (scrollTop > 300) {
+                        scrollButton.classList.add('visible');
+                    } else {
+                        scrollButton.classList.remove('visible');
+                    }
+                });
+                
+                // Initialize page
+                window.addEventListener('load', function() {
+                    showSection('main-analysis');
+                    
+                    // Add smooth scrolling to all internal links
+                    document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+                        anchor.addEventListener('click', function (e) {
+                            e.preventDefault();
+                            const target = document.querySelector(this.getAttribute('href'));
+                            if (target) {
+                                target.scrollIntoView({
+                                    behavior: 'smooth',
+                                    block: 'start'
+                                });
+                            }
+                        });
+                    });
+                    
+                    // Add loading animation to images
+                    const images = document.querySelectorAll('.visualization-image');
+                    images.forEach(img => {
+                        img.addEventListener('load', function() {
+                            this.style.opacity = '0';
+                            this.style.transform = 'scale(0.95)';
+                            this.style.transition = 'all 0.3s ease';
+                            setTimeout(() => {
+                                this.style.opacity = '1';
+                                this.style.transform = 'scale(1)';
+                            }, 100);
+                        });
+                    });
+                });
+                
+                // Add keyboard navigation
+                document.addEventListener('keydown', function(e) {
+                    if (e.key === '1') {
+                        showSection('main-analysis');
+                    } else if (e.key === '2') {
+                        showSection('visualizations');
+                    } else if (e.key === 'Home') {
+                        scrollToTop();
+                    }
+                });
+                
+                // Add touch/swipe support for mobile
+                let touchStartX = null;
+                let touchStartY = null;
+                
+                document.addEventListener('touchstart', function(e) {
+                    touchStartX = e.touches[0].clientX;
+                    touchStartY = e.touches[0].clientY;
+                });
+                
+                document.addEventListener('touchend', function(e) {
+                    if (!touchStartX || !touchStartY) return;
+                    
+                    const touchEndX = e.changedTouches[0].clientX;
+                    const touchEndY = e.changedTouches[0].clientY;
+                    
+                    const deltaX = touchStartX - touchEndX;
+                    const deltaY = touchStartY - touchEndY;
+                    
+                    if (Math.abs(deltaX) > Math.abs(deltaY) && Math.abs(deltaX) > 50) {
+                        const currentSection = document.querySelector('.content-section.active').id;
+                        if (deltaX > 0 && currentSection === 'main-analysis') {
+                            // Swipe left - go to visualizations
+                            showSection('visualizations');
+                        } else if (deltaX < 0 && currentSection === 'visualizations') {
+                            // Swipe right - go to main analysis
+                            showSection('main-analysis');
+                        }
+                    }
+                    
+                    touchStartX = null;
+                    touchStartY = null;
+                });
+            </script>
+        </body>
+        </html>
+        
